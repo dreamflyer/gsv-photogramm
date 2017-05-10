@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <script src = "index.js"></script>
+</head>
+
+<body>
+    <div id="streetviewpano" style="position: absolute; top:0; bottom:0; left:0; right:50%; z-index: 0"></div>
+    <div id="googlemap" style="position: absolute; top:0; bottom:0; left:50%; right:0; z-index: 0"></div>
+
+    <div id="compas" style="position: absolute; width: 100px; height: 100px; left: 100px; top: 100px; z-index: 0; background-color: black; display: none">
+        <div id="compasValue" style="position: relative; width: 10px; height: 10px; left: 45px; top: 45px; z-index: 0; background-color: white"></div>
+    </div>
+
+    <script>
+        GSVPhotogramm.init();
+    </script>
+
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAj0zay70G-IrthCvY7ckMZsNdC3Lv5v8s&callback=GSVPhotogramm.onGoogleLoad"></script>
+</body>
+</html>
