@@ -1,5 +1,6 @@
 /// <reference path="../typings/main.d.ts" />
 import gmDrawUtils = require("gm-draw-utils");
+import storage = require("./storage-utils");
 
 var leastSquares = require("least-squares");
 
@@ -65,7 +66,7 @@ export function addCurrentFixes(panorama: any): void {
         return;
     }
 
-    var stats = getStorageItem("calibration_stats");
+    var stats = storage.getStorageItem("calibration_stats");
 
     if(!stats) {
         stats = {};
@@ -86,13 +87,13 @@ export function addCurrentFixes(panorama: any): void {
         });
     });
 
-    setStorageItem('calibration_stats', stats);
+    storage.setStorageItem('calibration_stats', stats);
 }
 
 export function clearCalibration(panorama: any): void {
     var panoId = panorama.getPano();
 
-    var stats = getStorageItem("calibration_stats");
+    var stats = storage.getStorageItem("calibration_stats");
 
     if(!stats) {
         return;
@@ -106,13 +107,13 @@ export function clearCalibration(panorama: any): void {
 
     delete stats[panoId];
 
-    setStorageItem('calibration_stats', stats);
+    storage.setStorageItem('calibration_stats', stats);
 }
 
 export function getCalibration(panorama: any): any {
     var panoId = panorama.getPano();
 
-    var stats = getStorageItem("calibration_stats");
+    var stats = storage.getStorageItem("calibration_stats");
 
     if(!stats) {
         return null;
@@ -187,20 +188,4 @@ function findInfoRecord(panoId: string): any {
     }
 
     return null;
-}
-
-function getStorageItem(objectId: string): any {
-    var jsonString = window.localStorage.getItem(objectId);
-    
-    if(!jsonString) {
-        return undefined;
-    }
-    
-    return JSON.parse(jsonString);
-}
-
-function setStorageItem(objectId: string, value: any): void {
-    var jsonString = JSON.stringify(value);
-
-    window.localStorage.setItem(objectId, jsonString);
 }

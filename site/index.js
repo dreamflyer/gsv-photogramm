@@ -61,15 +61,6 @@ var GSVPhotogramm =
 	            lat: 55.0512619,
 	            lon: 82.9190818
 	        });
-	        // var rect1 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 10, y: 0});
-	        // var rect2 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: -10, y: 0});
-	        // var rect3 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 0, y: 10});
-	        // var rect4 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 0, y: -10});
-	        //
-	        // region.addPolygon(rect1);
-	        // region.addPolygon(rect2);
-	        // region.addPolygon(rect3);
-	        // region.addPolygon(rect4);
 	        modelUtils.controlPanel.addButton("add object", function () {
 	            var rect = new gmDrawUtils.Rectangle({ width: 10, height: 10 }, { x: 0, y: 0 });
 	            region.addPolygon(rect);
@@ -78,33 +69,32 @@ var GSVPhotogramm =
 	            mesh.calibration = calibration;
 	            gsvInjection.addMesh(mesh);
 	        });
-	        modelUtils.controlPanel.addButton("toggle calibration", function () {
-	            calibrationUtils.calibrationEnabled = !calibrationUtils.calibrationEnabled;
-	        });
-	        modelUtils.controlPanel.addButton("set initial position", function () {
-	            calibrationUtils.setInitialPositions(region.polys, panorama);
-	        });
-	        modelUtils.controlPanel.addButton("set fixed positions", function () {
-	            calibrationUtils.setFixedPositions(panorama);
-	        });
-	        modelUtils.controlPanel.addButton("add fixes", function () {
-	            calibrationUtils.addCurrentFixes(panorama);
-	        });
-	        modelUtils.controlPanel.addButton("clear fixes", function () {
-	            calibrationUtils.clearCalibration(panorama);
+	        // modelUtils.controlPanel.addButton("toggle calibration", () => {
+	        //     calibrationUtils.calibrationEnabled = !calibrationUtils.calibrationEnabled;
+	        // });
+	        //
+	        // modelUtils.controlPanel.addButton("set initial position", () => {
+	        //     calibrationUtils.setInitialPositions(region.polys, panorama);
+	        // });
+	        //
+	        // modelUtils.controlPanel.addButton("set fixed positions", () => {
+	        //     calibrationUtils.setFixedPositions(panorama);
+	        // });
+	        //
+	        // modelUtils.controlPanel.addButton("add fixes", () => {
+	        //     calibrationUtils.addCurrentFixes(panorama);
+	        // });
+	        //
+	        // modelUtils.controlPanel.addButton("clear fixes", () => {
+	        //     calibrationUtils.clearCalibration(panorama);
+	        // });
+	        modelUtils.controlPanel.addSlider("x axis rotation fix", [-0.1, 0.1, 0.0001, 0], function (value) {
+	            gsvInjection.setXAxisRotationFix(value);
+	            modelUtils.touchStreetView();
 	        });
 	        var getHeading = function () {
 	            return panorama.getPov().heading;
 	        };
-	        // var mesh1 = new modelUtils.FromMapRectMesh(rect1, getHeading);
-	        // var mesh2 = new modelUtils.FromMapRectMesh(rect2, getHeading);
-	        // var mesh3 = new modelUtils.FromMapRectMesh(rect3, getHeading);
-	        // var mesh4 = new modelUtils.FromMapRectMesh(rect4, getHeading);
-	        //
-	        // gsvInjection.addMesh(mesh1);
-	        // gsvInjection.addMesh(mesh2);
-	        // gsvInjection.addMesh(mesh3);
-	        // gsvInjection.addMesh(mesh4);
 	        panorama.addListener("position_changed", function () {
 	            var calibration = calibrationUtils.getCalibration(panorama);
 	            gsvInjection.activeMeshes.forEach(function (mesh) {
@@ -128,8 +118,8 @@ var GSVPhotogramm =
 	            var debugPanel = new domUtils.DebugInfoPanel();
 	            var controlPanel = new domUtils.ControlPanel();
 	            modelUtils.controlPanel = controlPanel;
-	            gsvInjection.setDebugAcceptor(debugPanel);
-	            debugPanel.attach();
+	            //gsvInjection.setDebugAcceptor(debugPanel);
+	            //debugPanel.attach();
 	            controlPanel.attach();
 	            map.addListener("projection_changed", function () {
 	                if (!projection) {
@@ -162,8 +152,9 @@ var GSVPhotogramm =
 	            pitch: 0,
 	            zoom: 1
 	        },
-	        disableDefaultUI: true,
-	        clickToGo: false
+	        //disableDefaultUI: true,
+	        clickToGo: false,
+	        imageDateControl: true
 	    };
 	}
 	exports.getPanoConfig = getPanoConfig;
@@ -175,7 +166,8 @@ var GSVPhotogramm =
 	        },
 	        scrollwheel: false,
 	        zoom: 18,
-	        draggable: false
+	        draggable: false,
+	        imageDateControl: true
 	    };
 	}
 	exports.getMapConfig = getMapConfig;
@@ -271,12 +263,16 @@ var GSVPhotogramm =
 	        this.style = {
 	            position: 'absolute',
 	            width: '200px',
-	            height: '200px',
-	            left: '400px',
+	            height: '300px',
+	            left: '350px',
 	            top: '100px',
 	            color: 'green',
-	            'background-color': 'black',
-	            'white-space': 'nowrap'
+	            background: 'linear-gradient(to top, #b5bdc8 0%, #828c95 36%, #28343b 100%)',
+	            borderRadius: '15px',
+	            fontFamily: 'helvetica',
+	            paddingBottom: '10px',
+	            paddingLeft: '5px',
+	            paddingRight: '5px'
 	        };
 	        this.table = document.createElement("table");
 	        this.container = document.createElement("div");
@@ -284,29 +280,71 @@ var GSVPhotogramm =
 	            this.container.style[key] = this.style[key];
 	        }
 	        this.container.draggable = true;
+	        this.table.style.width = "100%";
+	        this.table.style.height = "100%";
 	        this.container.appendChild(this.table);
 	        this.container.ondragend = function (event) {
 	            _this.container.style.left = event.x + "px";
 	            _this.container.style.top = (event.y - parseFloat(_this.container.style.height)) + "px";
 	        };
+	        var titleElement = this.addCell(this.table.insertRow());
+	        titleElement.innerText = 'Controls';
+	        titleElement.style.color = 'white';
 	    }
 	    ControlPanel.prototype.addButton = function (name, callback) {
 	        var row = this.table.insertRow();
 	        var cell = this.addCell(row);
-	        var valueBinding = {};
+	        cell.style.paddingBottom = '7px';
 	        var button = document.createElement("input");
-	        button.type = "button";
-	        button.value = name;
-	        button.style.width = "100%";
-	        button.style.height = "100%";
-	        button.addEventListener("click", function () { return callback(); });
+	        button.type = 'button';
+	        button.value = name.toUpperCase();
+	        button.style.width = '100%';
+	        button.style.height = '100%';
+	        button.style.border = 'none';
+	        button.style.borderRadius = '5px';
+	        button.style.background = 'linear-gradient(to top, #cccccc 0%, #888888 36%, #333333 100%)';
+	        button.style.color = 'white';
+	        button.addEventListener('click', function () { return callback(); });
 	        cell.appendChild(button);
 	    };
-	    ControlPanel.prototype.addCell = function (row) {
+	    ControlPanel.prototype.addSlider = function (name, minMaxStepDefault, callback, resetValue) {
+	        var row = this.table.insertRow();
+	        var cell = this.addCell(row);
+	        cell.style.paddingBottom = '7px';
+	        var wrapper = document.createElement('div');
+	        wrapper.style.width = '100%';
+	        wrapper.style.height = '100%';
+	        wrapper.style.borderRadius = '5px';
+	        wrapper.style.background = 'linear-gradient(to top, #cccccc 0%, #888888 36%, #333333 100%)';
+	        wrapper.style.color = 'white';
+	        wrapper.innerHTML = '<label style = "font-family: helvetica; font-size: x-small; font-weight: normal;">' + name.toUpperCase() + '</label>';
+	        cell.appendChild(wrapper);
+	        var button = document.createElement("input");
+	        button.type = "range";
+	        button.style.width = "100%";
+	        button.style.margin = "0px";
+	        button.style.marginTop = "5px";
+	        button.min = minMaxStepDefault[0] + '';
+	        button.max = minMaxStepDefault[1] + '';
+	        button.step = minMaxStepDefault[2] + '';
+	        button.defaultValue = minMaxStepDefault[3] + '';
+	        button.draggable = true;
+	        button.addEventListener("dragstart", function (event) {
+	            event.preventDefault();
+	            event.stopPropagation();
+	            return false;
+	        });
+	        button.addEventListener("input", function () {
+	            var value = parseFloat(button.value);
+	            callback(value === NaN ? 0 : value);
+	        });
+	        wrapper.appendChild(button);
+	    };
+	    ControlPanel.prototype.addCell = function (row, width) {
 	        var cell = row.insertCell();
 	        cell.align = 'center';
 	        cell.vAlign = 'center';
-	        cell.style.width = '100%';
+	        cell.style.width = width === undefined ? '100%' : (width + '%');
 	        return cell;
 	    };
 	    ControlPanel.prototype.attach = function () {
@@ -378,10 +416,11 @@ var GSVPhotogramm =
 	var gsvInjection = __webpack_require__(6);
 	var meshData = __webpack_require__(5);
 	var domUtils = __webpack_require__(2);
+	var shortid = __webpack_require__(8);
 	var timeout = null;
 	var FromMapRectMesh = (function (_super) {
 	    __extends(FromMapRectMesh, _super);
-	    function FromMapRectMesh(rectangle, getHeading) {
+	    function FromMapRectMesh(rectangle, getHeading, id) {
 	        var _this = this;
 	        _super.call(this, getHeading);
 	        this.rectangle = rectangle;
@@ -391,6 +430,7 @@ var GSVPhotogramm =
 	        this.ground = 5;
 	        this.height = 10;
 	        this.scale = 0.01;
+	        this.id = id || shortid.generate();
 	        this.vertices = this.cubeBase.vertices;
 	        this.indices = this.cubeBase.indices;
 	        this.uvMap = this.cubeBase.uvMap;
@@ -398,8 +438,14 @@ var GSVPhotogramm =
 	        this.rectangle.displayListener = function (data) {
 	            _this.applyData(data);
 	        };
+	        rectangle.onRemove = function () {
+	            _this.remove();
+	            _this.touchStreetView();
+	        };
 	        this.applyData({ wheelEvent: null });
 	    }
+	    FromMapRectMesh.prototype.serialize = function () {
+	    };
 	    FromMapRectMesh.prototype.wheelScrolled = function (event) {
 	        if (event.ctrlKey) {
 	            this.ground -= event.deltaY / 10;
@@ -445,6 +491,7 @@ var GSVPhotogramm =
 	        taskId = null;
 	    }, 30);
 	}
+	exports.touchStreetView = touchStreetView;
 	//# sourceMappingURL=model-utils.js.map
 
 /***/ },
@@ -452,7 +499,7 @@ var GSVPhotogramm =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var leastSquares = __webpack_require__(10);
+	var leastSquares = __webpack_require__(9);
 	var calibrationInfos = [];
 	exports.calibrationEnabled = true;
 	function setInitialPositions(polys, panorama) {
@@ -698,10 +745,11 @@ var GSVPhotogramm =
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var utils = __webpack_require__(8);
-	var mathUtils = __webpack_require__(9);
-	var decompose = __webpack_require__(11);
+	var utils = __webpack_require__(10);
+	var mathUtils = __webpack_require__(11);
+	var decompose = __webpack_require__(13);
 	var drawDebugger = new utils.Debugger();
+	var xAxisRotationFix = 0;
 	var Mesh = (function () {
 	    function Mesh(getHeading) {
 	        this.getHeading = getHeading;
@@ -758,8 +806,9 @@ var GSVPhotogramm =
 	        var matrixRotation = getMatrixRotation(initialMatrix);
 	        var headingDelta = Math.PI + matrixRotation.heading + mathUtils.toRad(this.getHeading());
 	        matrices.push(mathUtils.zRotation(this.rotation));
-	        matrices.push(mathUtils.xRotation(-matrixRotation.pitch));
+	        //matrices.push(mathUtils.xRotation(-matrixRotation.pitch));
 	        matrices.push(mathUtils.translation(this.translation.x, this.translation.y, this.translation.z));
+	        matrices.push(mathUtils.yRotation(-xAxisRotationFix));
 	        matrices.push(mathUtils.zRotation(headingDelta));
 	        matrices.push(initialMatrix);
 	        return new Float32Array(mathUtils.multiplyMatrices(matrices));
@@ -778,6 +827,10 @@ var GSVPhotogramm =
 	        }
 	        oldWebGl.drawElements(gl.TRIANGLES, this.indices.length, gl.UNSIGNED_SHORT, 0);
 	    };
+	    Mesh.prototype.remove = function () {
+	        removeMesh(this);
+	        console.log("mesh removed");
+	    };
 	    return Mesh;
 	}());
 	exports.Mesh = Mesh;
@@ -790,7 +843,7 @@ var GSVPhotogramm =
 	    decompose(mathUtils.transpose(matrix), translation, scale, skew, perspective, quaternion);
 	    drawDebugger.setValue('translation', translation);
 	    drawDebugger.setValue('scale', scale);
-	    drawDebugger.setValue('perspective', perspective);
+	    drawDebugger.setValue('skew', skew);
 	    drawDebugger.setValue('quaternion', quaternion);
 	    return getQaternionRotation(quaternion);
 	}
@@ -875,6 +928,10 @@ var GSVPhotogramm =
 	    drawDebugger.setValueAcceptor(acceptor);
 	}
 	exports.setDebugAcceptor = setDebugAcceptor;
+	function setXAxisRotationFix(value) {
+	    xAxisRotationFix = value;
+	}
+	exports.setXAxisRotationFix = setXAxisRotationFix;
 	//# sourceMappingURL=index.js.map
 
 /***/ },
@@ -887,12 +944,14 @@ var GSVPhotogramm =
 	    function __() { this.constructor = d; }
 	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 	};
-	var geoMathUtils = __webpack_require__(12);
+	var geoMathUtils = __webpack_require__(19);
 	var NORMAL_COLOR = '#00FF00';
 	var SELECTED_COLOR = '#0000FF';
 	var Polygon = (function () {
 	    function Polygon() {
 	        this.displayListener = null;
+	        this.region = null;
+	        this.onRemove = null;
 	        this.position = {
 	            x: 0,
 	            y: 0
@@ -909,6 +968,12 @@ var GSVPhotogramm =
 	    Polygon.prototype.onDisplay = function () {
 	        if (this.displayListener) {
 	            this.displayListener({});
+	        }
+	    };
+	    Polygon.prototype.remove = function () {
+	        this.region.removePolygon(this);
+	        if (this.onRemove) {
+	            this.onRemove();
 	        }
 	    };
 	    return Polygon;
@@ -943,9 +1008,43 @@ var GSVPhotogramm =
 	        return [].concat(this.polys);
 	    };
 	    Region.prototype.addPolygon = function (poly) {
+	        poly.region = this;
 	        this.polys.push(poly);
 	        this.displayPoly(poly);
 	        this.setupListeners(poly);
+	    };
+	    Region.prototype.removePolygon = function (poly) {
+	        var _this = this;
+	        var polys = this.polys;
+	        var selectedPolys = this.selection;
+	        this.polys = [];
+	        this.selection = [];
+	        polys.forEach(function (polyToAdd) {
+	            if (polyToAdd === poly) {
+	                return;
+	            }
+	            _this.polys.push(polyToAdd);
+	        });
+	        selectedPolys.forEach(function (polyToAdd) {
+	            if (polyToAdd === poly) {
+	                return;
+	            }
+	            _this.selection.push(polyToAdd);
+	        });
+	        this.hidePoly(poly);
+	    };
+	    Region.prototype.alignRotations = function (polys) {
+	        var _this = this;
+	        var direction = { x: 0, y: 0 };
+	        polys.forEach(function (poly) {
+	            direction.x += Math.cos(poly.rotation);
+	            direction.y += Math.sin(poly.rotation);
+	        });
+	        var rotation = getRotation({ x: 0, y: 0 }, { x: 1, y: 0 }, direction);
+	        polys.forEach(function (poly) {
+	            poly.rotation = rotation;
+	            _this.displayPoly(poly);
+	        });
 	    };
 	    Region.prototype.rotatePolygons = function (polys, start, end) {
 	        var _this = this;
@@ -1056,10 +1155,29 @@ var GSVPhotogramm =
 	            _this.drawSelectionState();
 	        });
 	    };
+	    Region.prototype.removeSelection = function () {
+	        var selection = this.selection;
+	        this.selection = [];
+	        selection.forEach(function (selected) {
+	            selected.remove();
+	        });
+	    };
 	    Region.prototype.setupRegionListeners = function () {
 	        var _this = this;
 	        var div = this.map.getDiv();
 	        div.tabIndex = 0;
+	        div.addEventListener("keyup", function (event) {
+	            if (event.code === 'Delete') {
+	                _this.removeSelection();
+	            }
+	            return preventDefault(event);
+	        });
+	        div.addEventListener("keyup", function (event) {
+	            if (event.code === 'KeyO') {
+	                _this.alignRotations(_this.selection);
+	            }
+	            return preventDefault(event);
+	        });
 	        div.addEventListener("mouseover", function (event) {
 	            div.focus();
 	            return preventDefault(event);
@@ -1369,11 +1487,75 @@ var GSVPhotogramm =
 	    event.preventDefault();
 	    return false;
 	}
-	;
 	//# sourceMappingURL=index.js.map
 
 /***/ },
 /* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	module.exports = __webpack_require__(12);
+
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function(){
+
+	  //I should make this a UMD sometime
+	if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
+	  module.exports = LeastSquares
+	} else {
+	  window.lsq = LeastSquares
+	}
+
+	function LeastSquares (X, Y, computeError, ret) {
+	  if (typeof computeError == 'object') {
+	    ret = computeError
+	    computeError = false
+	  }
+
+	  if (typeof ret == 'undefined') ret = {}
+
+	  var sumX = 0
+	  var sumY = 0
+	  var sumXY = 0
+	  var sumXSq = 0
+	  var N = X.length
+
+	  for(var i = 0; i < N; ++i) {
+	    sumX += X[i]
+	    sumY += Y[i]
+	    sumXY += X[i] * Y[i]
+	    sumXSq += X[i] * X[i]
+	  }
+
+	  ret.m = ((sumXY - sumX * sumY / N) ) / (sumXSq - sumX * sumX / N)
+	  ret.b = sumY / N - ret.m * sumX / N
+
+	  if (computeError) {
+	    var varSum = 0
+	    for (var j = 0; j < N; ++j) {
+	      varSum += (Y[j] - ret.b - ret.m*X[j]) * (Y[j] - ret.b - ret.m*X[j])
+	    }
+
+	    var delta = N * sumXSq - sumX*sumX
+	    var vari = 1.0 / (N - 2.0) * varSum
+
+	    ret.bErr = Math.sqrt(vari / delta * sumXSq)
+	    ret.mErr = Math.sqrt(N / delta * vari)
+	  }
+
+	  return function(x) {
+	    return ret.m * x + ret.b
+	  }
+	}
+
+	})();
+
+/***/ },
+/* 10 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1598,7 +1780,7 @@ var GSVPhotogramm =
 	//# sourceMappingURL=utils.js.map
 
 /***/ },
-/* 9 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -1752,64 +1934,78 @@ var GSVPhotogramm =
 	//# sourceMappingURL=mathUtils.js.map
 
 /***/ },
-/* 10 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
-	(function(){
+	'use strict';
 
-	  //I should make this a UMD sometime
-	if (typeof module != 'undefined' && typeof module.exports != 'undefined') {
-	  module.exports = LeastSquares
-	} else {
-	  window.lsq = LeastSquares
+	var alphabet = __webpack_require__(14);
+	var encode = __webpack_require__(15);
+	var decode = __webpack_require__(16);
+	var build = __webpack_require__(17);
+	var isValid = __webpack_require__(18);
+
+	// if you are using cluster or multiple servers use this to make each instance
+	// has a unique value for worker
+	// Note: I don't know if this is automatically set when using third
+	// party cluster solutions such as pm2.
+	var clusterWorkerId = __webpack_require__(21) || 0;
+
+	/**
+	 * Set the seed.
+	 * Highly recommended if you don't want people to try to figure out your id schema.
+	 * exposed as shortid.seed(int)
+	 * @param seed Integer value to seed the random alphabet.  ALWAYS USE THE SAME SEED or you might get overlaps.
+	 */
+	function seed(seedValue) {
+	    alphabet.seed(seedValue);
+	    return module.exports;
 	}
 
-	function LeastSquares (X, Y, computeError, ret) {
-	  if (typeof computeError == 'object') {
-	    ret = computeError
-	    computeError = false
-	  }
+	/**
+	 * Set the cluster worker or machine id
+	 * exposed as shortid.worker(int)
+	 * @param workerId worker must be positive integer.  Number less than 16 is recommended.
+	 * returns shortid module so it can be chained.
+	 */
+	function worker(workerId) {
+	    clusterWorkerId = workerId;
+	    return module.exports;
+	}
 
-	  if (typeof ret == 'undefined') ret = {}
-
-	  var sumX = 0
-	  var sumY = 0
-	  var sumXY = 0
-	  var sumXSq = 0
-	  var N = X.length
-
-	  for(var i = 0; i < N; ++i) {
-	    sumX += X[i]
-	    sumY += Y[i]
-	    sumXY += X[i] * Y[i]
-	    sumXSq += X[i] * X[i]
-	  }
-
-	  ret.m = ((sumXY - sumX * sumY / N) ) / (sumXSq - sumX * sumX / N)
-	  ret.b = sumY / N - ret.m * sumX / N
-
-	  if (computeError) {
-	    var varSum = 0
-	    for (var j = 0; j < N; ++j) {
-	      varSum += (Y[j] - ret.b - ret.m*X[j]) * (Y[j] - ret.b - ret.m*X[j])
+	/**
+	 *
+	 * sets new characters to use in the alphabet
+	 * returns the shuffled alphabet
+	 */
+	function characters(newCharacters) {
+	    if (newCharacters !== undefined) {
+	        alphabet.characters(newCharacters);
 	    }
 
-	    var delta = N * sumXSq - sumX*sumX
-	    var vari = 1.0 / (N - 2.0) * varSum
-
-	    ret.bErr = Math.sqrt(vari / delta * sumXSq)
-	    ret.mErr = Math.sqrt(N / delta * vari)
-	  }
-
-	  return function(x) {
-	    return ret.m * x + ret.b
-	  }
+	    return alphabet.shuffled();
 	}
 
-	})();
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function generate() {
+	  return build(clusterWorkerId);
+	}
+
+	// Export all other functions as properties of the generate function
+	module.exports = generate;
+	module.exports.generate = generate;
+	module.exports.seed = seed;
+	module.exports.worker = worker;
+	module.exports.characters = characters;
+	module.exports.decode = decode;
+	module.exports.isValid = isValid;
+
 
 /***/ },
-/* 11 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/*jshint unused:true*/
@@ -1829,18 +2025,18 @@ var GSVPhotogramm =
 	http://www.w3.org/TR/css3-transforms/#decomposing-a-3d-matrix
 	*/
 
-	var normalize = __webpack_require__(13)
+	var normalize = __webpack_require__(20)
 
-	var create = __webpack_require__(14)
-	var clone = __webpack_require__(15)
-	var determinant = __webpack_require__(16)
-	var invert = __webpack_require__(17)
-	var transpose = __webpack_require__(18)
+	var create = __webpack_require__(24)
+	var clone = __webpack_require__(25)
+	var determinant = __webpack_require__(26)
+	var invert = __webpack_require__(27)
+	var transpose = __webpack_require__(28)
 	var vec3 = {
-	    length: __webpack_require__(19),
-	    normalize: __webpack_require__(20),
-	    dot: __webpack_require__(21),
-	    cross: __webpack_require__(22)
+	    length: __webpack_require__(29),
+	    normalize: __webpack_require__(30),
+	    dot: __webpack_require__(31),
+	    cross: __webpack_require__(32)
 	}
 
 	var tmp = create()
@@ -1993,11 +2189,242 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 12 */
+/* 14 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var randomFromSeed = __webpack_require__(22);
+
+	var ORIGINAL = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-';
+	var alphabet;
+	var previousSeed;
+
+	var shuffled;
+
+	function reset() {
+	    shuffled = false;
+	}
+
+	function setCharacters(_alphabet_) {
+	    if (!_alphabet_) {
+	        if (alphabet !== ORIGINAL) {
+	            alphabet = ORIGINAL;
+	            reset();
+	        }
+	        return;
+	    }
+
+	    if (_alphabet_ === alphabet) {
+	        return;
+	    }
+
+	    if (_alphabet_.length !== ORIGINAL.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. You submitted ' + _alphabet_.length + ' characters: ' + _alphabet_);
+	    }
+
+	    var unique = _alphabet_.split('').filter(function(item, ind, arr){
+	       return ind !== arr.lastIndexOf(item);
+	    });
+
+	    if (unique.length) {
+	        throw new Error('Custom alphabet for shortid must be ' + ORIGINAL.length + ' unique characters. These characters were not unique: ' + unique.join(', '));
+	    }
+
+	    alphabet = _alphabet_;
+	    reset();
+	}
+
+	function characters(_alphabet_) {
+	    setCharacters(_alphabet_);
+	    return alphabet;
+	}
+
+	function setSeed(seed) {
+	    randomFromSeed.seed(seed);
+	    if (previousSeed !== seed) {
+	        reset();
+	        previousSeed = seed;
+	    }
+	}
+
+	function shuffle() {
+	    if (!alphabet) {
+	        setCharacters(ORIGINAL);
+	    }
+
+	    var sourceArray = alphabet.split('');
+	    var targetArray = [];
+	    var r = randomFromSeed.nextValue();
+	    var characterIndex;
+
+	    while (sourceArray.length > 0) {
+	        r = randomFromSeed.nextValue();
+	        characterIndex = Math.floor(r * sourceArray.length);
+	        targetArray.push(sourceArray.splice(characterIndex, 1)[0]);
+	    }
+	    return targetArray.join('');
+	}
+
+	function getShuffled() {
+	    if (shuffled) {
+	        return shuffled;
+	    }
+	    shuffled = shuffle();
+	    return shuffled;
+	}
+
+	/**
+	 * lookup shuffled letter
+	 * @param index
+	 * @returns {string}
+	 */
+	function lookup(index) {
+	    var alphabetShuffled = getShuffled();
+	    return alphabetShuffled[index];
+	}
+
+	module.exports = {
+	    characters: characters,
+	    seed: setSeed,
+	    lookup: lookup,
+	    shuffled: getShuffled
+	};
+
+
+/***/ },
+/* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var randomByte = __webpack_require__(23);
+
+	function encode(lookup, number) {
+	    var loopCounter = 0;
+	    var done;
+
+	    var str = '';
+
+	    while (!done) {
+	        str = str + lookup( ( (number >> (4 * loopCounter)) & 0x0f ) | randomByte() );
+	        done = number < (Math.pow(16, loopCounter + 1 ) );
+	        loopCounter++;
+	    }
+	    return str;
+	}
+
+	module.exports = encode;
+
+
+/***/ },
+/* 16 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(14);
+
+	/**
+	 * Decode the id to get the version and worker
+	 * Mainly for debugging and testing.
+	 * @param id - the shortid-generated id.
+	 */
+	function decode(id) {
+	    var characters = alphabet.shuffled();
+	    return {
+	        version: characters.indexOf(id.substr(0, 1)) & 0x0f,
+	        worker: characters.indexOf(id.substr(1, 1)) & 0x0f
+	    };
+	}
+
+	module.exports = decode;
+
+
+/***/ },
+/* 17 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var encode = __webpack_require__(15);
+	var alphabet = __webpack_require__(14);
+
+	// Ignore all milliseconds before a certain time to reduce the size of the date entropy without sacrificing uniqueness.
+	// This number should be updated every year or so to keep the generated id short.
+	// To regenerate `new Date() - 0` and bump the version. Always bump the version!
+	var REDUCE_TIME = 1459707606518;
+
+	// don't change unless we change the algos or REDUCE_TIME
+	// must be an integer and less than 16
+	var version = 6;
+
+	// Counter is used when shortid is called multiple times in one second.
+	var counter;
+
+	// Remember the last time shortid was called in case counter is needed.
+	var previousSeconds;
+
+	/**
+	 * Generate unique id
+	 * Returns string id
+	 */
+	function build(clusterWorkerId) {
+
+	    var str = '';
+
+	    var seconds = Math.floor((Date.now() - REDUCE_TIME) * 0.001);
+
+	    if (seconds === previousSeconds) {
+	        counter++;
+	    } else {
+	        counter = 0;
+	        previousSeconds = seconds;
+	    }
+
+	    str = str + encode(alphabet.lookup, version);
+	    str = str + encode(alphabet.lookup, clusterWorkerId);
+	    if (counter > 0) {
+	        str = str + encode(alphabet.lookup, counter);
+	    }
+	    str = str + encode(alphabet.lookup, seconds);
+
+	    return str;
+	}
+
+	module.exports = build;
+
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	var alphabet = __webpack_require__(14);
+
+	function isShortId(id) {
+	    if (!id || typeof id !== 'string' || id.length < 6 ) {
+	        return false;
+	    }
+
+	    var characters = alphabet.characters();
+	    var len = id.length;
+	    for(var i = 0; i < len;i++) {
+	        if (characters.indexOf(id[i]) === -1) {
+	            return false;
+	        }
+	    }
+	    return true;
+	}
+
+	module.exports = isShortId;
+
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var geodesy = __webpack_require__(23);
+	var geodesy = __webpack_require__(33);
 	function toLatLon(lat0, lon0, x, y) {
 	    var dimension = getGeoDimension(lat0, lon0, 10000);
 	    return {
@@ -2037,7 +2464,7 @@ var GSVPhotogramm =
 	//# sourceMappingURL=index.js.map
 
 /***/ },
-/* 13 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = function normalize(out, mat) {
@@ -2052,7 +2479,67 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 14 */
+/* 21 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	module.exports = 0;
+
+
+/***/ },
+/* 22 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	// Found this seed-based random generator somewhere
+	// Based on The Central Randomizer 1.3 (C) 1997 by Paul Houle (houle@msc.cornell.edu)
+
+	var seed = 1;
+
+	/**
+	 * return a random number based on a seed
+	 * @param seed
+	 * @returns {number}
+	 */
+	function getNextValue() {
+	    seed = (seed * 9301 + 49297) % 233280;
+	    return seed/(233280.0);
+	}
+
+	function setSeed(_seed_) {
+	    seed = _seed_;
+	}
+
+	module.exports = {
+	    nextValue: getNextValue,
+	    seed: setSeed
+	};
+
+
+/***/ },
+/* 23 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var crypto = typeof window === 'object' && (window.crypto || window.msCrypto); // IE 11 uses window.msCrypto
+
+	function randomByte() {
+	    if (!crypto || !crypto.getRandomValues) {
+	        return Math.floor(Math.random() * 256) & 0x30;
+	    }
+	    var dest = new Uint8Array(1);
+	    crypto.getRandomValues(dest);
+	    return dest[0] & 0x30;
+	}
+
+	module.exports = randomByte;
+
+
+/***/ },
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = create;
@@ -2084,7 +2571,7 @@ var GSVPhotogramm =
 	};
 
 /***/ },
-/* 15 */
+/* 25 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = clone;
@@ -2117,7 +2604,7 @@ var GSVPhotogramm =
 	};
 
 /***/ },
-/* 16 */
+/* 26 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = determinant;
@@ -2152,7 +2639,7 @@ var GSVPhotogramm =
 	};
 
 /***/ },
-/* 17 */
+/* 27 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = invert;
@@ -2212,7 +2699,7 @@ var GSVPhotogramm =
 	};
 
 /***/ },
-/* 18 */
+/* 28 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = transpose;
@@ -2266,7 +2753,7 @@ var GSVPhotogramm =
 	};
 
 /***/ },
-/* 19 */
+/* 29 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = length;
@@ -2285,7 +2772,7 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 20 */
+/* 30 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = normalize;
@@ -2313,7 +2800,7 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 21 */
+/* 31 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = dot;
@@ -2330,7 +2817,7 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 22 */
+/* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
 	module.exports = cross;
@@ -2354,26 +2841,26 @@ var GSVPhotogramm =
 	}
 
 /***/ },
-/* 23 */
+/* 33 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* npm main module */
 	'use strict';
-	exports.LatLonSpherical   = __webpack_require__(24);
-	exports.LatLonEllipsoidal = __webpack_require__(25);
+	exports.LatLonSpherical   = __webpack_require__(34);
+	exports.LatLonEllipsoidal = __webpack_require__(35);
 	// merge vincenty methods into LatLonEllipsoidal
-	var V = __webpack_require__(26);
+	var V = __webpack_require__(36);
 	for (var prop in V) exports.LatLonEllipsoidal[prop] = V[prop];
-	exports.LatLonVectors     = __webpack_require__(27);
-	exports.Vector3d          = __webpack_require__(28);
-	exports.Utm               = __webpack_require__(29);
-	exports.Mgrs              = __webpack_require__(30);
-	exports.OsGridRef         = __webpack_require__(31);
-	exports.Dms               = __webpack_require__(32);
+	exports.LatLonVectors     = __webpack_require__(37);
+	exports.Vector3d          = __webpack_require__(38);
+	exports.Utm               = __webpack_require__(39);
+	exports.Mgrs              = __webpack_require__(40);
+	exports.OsGridRef         = __webpack_require__(41);
+	exports.Dms               = __webpack_require__(42);
 
 
 /***/ },
-/* 24 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -2384,7 +2871,7 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(32); // ≡ import Dms from 'dms.js'
+	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(42); // ≡ import Dms from 'dms.js'
 
 
 	/**
@@ -3011,7 +3498,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 25 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -3022,8 +3509,8 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var Vector3d = __webpack_require__(28); // ≡ import Vector3d from 'vector3d.js'
-	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(32);           // ≡ import Dms from 'dms.js'
+	if (typeof module!='undefined' && module.exports) var Vector3d = __webpack_require__(38); // ≡ import Vector3d from 'vector3d.js'
+	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(42);           // ≡ import Dms from 'dms.js'
 
 
 	/**
@@ -3292,7 +3779,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 26 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -3303,7 +3790,7 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(25); // ≡ import LatLon from 'latlon-ellipsoidal.js'
+	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(35); // ≡ import LatLon from 'latlon-ellipsoidal.js'
 
 
 	/**
@@ -3570,7 +4057,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 27 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -3581,8 +4068,8 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var Vector3d = __webpack_require__(28); // ≡ import Vector3d from 'vector3d.js'
-	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(32);           // ≡ import Dms from 'dms.js'
+	if (typeof module!='undefined' && module.exports) var Vector3d = __webpack_require__(38); // ≡ import Vector3d from 'vector3d.js'
+	if (typeof module!='undefined' && module.exports) var Dms = __webpack_require__(42);           // ≡ import Dms from 'dms.js'
 
 
 	/**
@@ -4191,7 +4678,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 28 */
+/* 38 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -4442,7 +4929,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 29 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -4453,7 +4940,7 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(25); // ≡ import LatLon from 'latlon-ellipsoidal.js'
+	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(35); // ≡ import LatLon from 'latlon-ellipsoidal.js'
 
 
 	/**
@@ -4848,7 +5335,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 30 */
+/* 40 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -4859,8 +5346,8 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var Utm = __webpack_require__(29);                   // ≡ import Utm from 'utm.js'
-	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(25); // ≡ import LatLon from 'latlon-ellipsoidal.js'
+	if (typeof module!='undefined' && module.exports) var Utm = __webpack_require__(39);                   // ≡ import Utm from 'utm.js'
+	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(35); // ≡ import LatLon from 'latlon-ellipsoidal.js'
 
 
 	/**
@@ -5123,7 +5610,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 31 */
+/* 41 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -5134,7 +5621,7 @@ var GSVPhotogramm =
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
 	'use strict';
-	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(25); // ≡ import LatLon from 'latlon-ellipsoidal.js'
+	if (typeof module!='undefined' && module.exports) var LatLon = __webpack_require__(35); // ≡ import LatLon from 'latlon-ellipsoidal.js'
 
 
 	/**
@@ -5436,7 +5923,7 @@ var GSVPhotogramm =
 
 
 /***/ },
-/* 32 */
+/* 42 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */

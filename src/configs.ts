@@ -11,9 +11,11 @@ export function getPanoConfig(lat: number, lng: number) {
             zoom: 1
         },
 
-        disableDefaultUI: true,
+        //disableDefaultUI: true,
 
-        clickToGo: false
+        clickToGo: false,
+
+        imageDateControl: true
     }
 }
 
@@ -28,6 +30,8 @@ export function getMapConfig(lat: number, lng: number): any {
 
         zoom: 18,
 
-        draggable: false
+        draggable: false,
+
+        imageDateControl: true
     }
 }

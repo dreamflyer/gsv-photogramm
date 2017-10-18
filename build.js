@@ -5,7 +5,7 @@ var path = require('path');
 var target = path.resolve(__dirname, './site');
 
 var config = {
-    entry: path.resolve(__dirname, './src/index.js'),
+    entry: path.resolve(__dirname, './dist/index.js'),
 
     output: {
         path: target,
@@ -22,7 +22,7 @@ var config = {
             {test: /\.json$/, loader: "json"}
         ]
     },
-    
+        
     node: {
         console: false,
         global: true,

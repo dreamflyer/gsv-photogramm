@@ -23,16 +23,6 @@ export function onGoogleLoad() {
             lon: 82.9190818
         });
         
-        // var rect1 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 10, y: 0});
-        // var rect2 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: -10, y: 0});
-        // var rect3 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 0, y: 10});
-        // var rect4 = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 0, y: -10});
-        //
-        // region.addPolygon(rect1);
-        // region.addPolygon(rect2);
-        // region.addPolygon(rect3);
-        // region.addPolygon(rect4);
-        
         modelUtils.controlPanel.addButton("add object", () => {
             var rect = new gmDrawUtils.Rectangle({width: 10, height: 10}, {x: 0, y: 0});
 
@@ -47,40 +37,36 @@ export function onGoogleLoad() {
             gsvInjection.addMesh(mesh);
         });
 
-        modelUtils.controlPanel.addButton("toggle calibration", () => {
-            calibrationUtils.calibrationEnabled = !calibrationUtils.calibrationEnabled;
-        });
-        
-        modelUtils.controlPanel.addButton("set initial position", () => {
-            calibrationUtils.setInitialPositions(region.polys, panorama);
-        });
+        // modelUtils.controlPanel.addButton("toggle calibration", () => {
+        //     calibrationUtils.calibrationEnabled = !calibrationUtils.calibrationEnabled;
+        // });
+        //
+        // modelUtils.controlPanel.addButton("set initial position", () => {
+        //     calibrationUtils.setInitialPositions(region.polys, panorama);
+        // });
+        //
+        // modelUtils.controlPanel.addButton("set fixed positions", () => {
+        //     calibrationUtils.setFixedPositions(panorama);
+        // });
+        //
+        // modelUtils.controlPanel.addButton("add fixes", () => {
+        //     calibrationUtils.addCurrentFixes(panorama);
+        // });
+        //
+        // modelUtils.controlPanel.addButton("clear fixes", () => {
+        //     calibrationUtils.clearCalibration(panorama);
+        // });
 
-        modelUtils.controlPanel.addButton("set fixed positions", () => {
-            calibrationUtils.setFixedPositions(panorama);
-        });
+        modelUtils.controlPanel.addSlider("x axis rotation fix", [-0.1, 0.1, 0.0001, 0], (value) => {
+            gsvInjection.setXAxisRotationFix(value);
 
-        modelUtils.controlPanel.addButton("add fixes", () => {
-            calibrationUtils.addCurrentFixes(panorama);
-        });
-
-        modelUtils.controlPanel.addButton("clear fixes", () => {
-            calibrationUtils.clearCalibration(panorama);
+            modelUtils.touchStreetView();
         });
         
         var getHeading = () => {
             return panorama.getPov().heading;
         }
 
-        // var mesh1 = new modelUtils.FromMapRectMesh(rect1, getHeading);
-        // var mesh2 = new modelUtils.FromMapRectMesh(rect2, getHeading);
-        // var mesh3 = new modelUtils.FromMapRectMesh(rect3, getHeading);
-        // var mesh4 = new modelUtils.FromMapRectMesh(rect4, getHeading);
-        //
-        // gsvInjection.addMesh(mesh1);
-        // gsvInjection.addMesh(mesh2);
-        // gsvInjection.addMesh(mesh3);
-        // gsvInjection.addMesh(mesh4);
-        
         panorama.addListener("position_changed", () => {
             var calibration = calibrationUtils.getCalibration(panorama);
             
@@ -90,7 +76,7 @@ export function onGoogleLoad() {
             
             var latLng = panorama.getPosition();
             
-            region.changeOrigin({lat: latLng.lat(), lon: latLng.lng()});
+            region.changeOrigin({lat: latLng.lat(), lon: latLng.lng()}, panorama.getPano());
         });
         
         return true;
@@ -114,9 +100,9 @@ function getPanorama(lat: number, lng: number): Promise<any> {
 
             modelUtils.controlPanel = controlPanel;
             
-            gsvInjection.setDebugAcceptor(debugPanel);
+            //gsvInjection.setDebugAcceptor(debugPanel);
 
-            debugPanel.attach();
+            //debugPanel.attach();
             controlPanel.attach();
 
             map.addListener("projection_changed", function() {

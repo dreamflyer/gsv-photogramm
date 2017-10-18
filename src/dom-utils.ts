@@ -106,12 +106,16 @@ export class ControlPanel {
     private style: any = {
         position: 'absolute',
         width: '200px',
-        height: '200px',
-        left: '400px',
+        height: '300px',
+        left: '350px',
         top: '100px',
         color: 'green',
-        'background-color': 'black',
-        'white-space': 'nowrap'
+        background: 'linear-gradient(to top, #b5bdc8 0%, #828c95 36%, #28343b 100%)',
+        borderRadius: '15px',
+        fontFamily: 'helvetica',
+        paddingBottom: '10px',
+        paddingLeft: '5px',
+        paddingRight: '5px'
     }
 
     private table: HTMLTableElement = document.createElement("table");
@@ -125,12 +129,21 @@ export class ControlPanel {
 
         this.container.draggable = true;
 
+        this.table.style.width = "100%";
+        this.table.style.height = "100%";
+
         this.container.appendChild(this.table);
 
         this.container.ondragend = (event: any) => {
             this.container.style.left = event.x + "px";
             this.container.style.top = (event.y - parseFloat(this.container.style.height)) + "px";
-        }
+        };
+
+        var titleElement = this.addCell(this.table.insertRow());
+
+        titleElement.innerText = 'Controls';
+
+        titleElement.style.color = 'white';
     }
 
     addButton(name: string, callback: () => void): void {
@@ -138,28 +151,83 @@ export class ControlPanel {
 
         var cell = this.addCell(row);
 
-        var valueBinding: any = {};
+        cell.style.paddingBottom = '7px';
 
         var button: HTMLInputElement = document.createElement("input");
 
-        button.type = "button"
-        button.value = name;
+        button.type = 'button';
+        button.value = name.toUpperCase();
 
-        button.style.width = "100%"
-        button.style.height = "100%"
+        button.style.width = '100%';
+        button.style.height = '100%';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.background  = 'linear-gradient(to top, #cccccc 0%, #888888 36%, #333333 100%)';
+        button.style.color = 'white';
         
-        button.addEventListener("click", () => callback());
+        button.addEventListener('click', () => callback());
 
         cell.appendChild(button);
     }
 
-    private addCell(row): HTMLTableCellElement {
+    addSlider(name: string, minMaxStepDefault: number[], callback: (value: number) => void, resetValue?: number): void {
+        var row: HTMLTableRowElement = this.table.insertRow();
+        
+        var cell = this.addCell(row);
+
+        cell.style.paddingBottom = '7px';
+
+        var wrapper = document.createElement('div');
+
+        wrapper.style.width = '100%';
+        wrapper.style.height = '100%';
+
+        wrapper.style.borderRadius = '5px';
+        wrapper.style.background  = 'linear-gradient(to top, #cccccc 0%, #888888 36%, #333333 100%)';
+        wrapper.style.color = 'white';
+
+        wrapper.innerHTML = '<label style = "font-family: helvetica; font-size: x-small; font-weight: normal;">' + name.toUpperCase() + '</label>';
+
+        cell.appendChild(wrapper);
+
+        var button: HTMLInputElement = document.createElement("input");
+
+        button.type = "range";
+
+        button.style.width = "100%";
+        button.style.margin = "0px";
+        button.style.marginTop = "5px";
+
+        button.min = minMaxStepDefault[0] + '';
+        button.max = minMaxStepDefault[1] + '';
+        button.step = minMaxStepDefault[2] + '';
+        button.defaultValue = minMaxStepDefault[3] + '';
+
+        button.draggable = true;
+
+        button.addEventListener("dragstart", event => {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            return false;
+        })
+
+        button.addEventListener("input", () => {
+            var value = parseFloat(button.value);
+
+            callback(value === NaN ? 0 : value);
+        });
+
+        wrapper.appendChild(button);
+    }
+
+    private addCell(row: HTMLTableRowElement, width?: number): HTMLTableCellElement {
         var cell: HTMLTableCellElement = row.insertCell();
 
         cell.align = 'center'
         cell.vAlign = 'center';
 
-        cell.style.width = '100%';
+        cell.style.width = width === undefined ? '100%' : (width + '%');
 
         return cell;
     }

@@ -3,26 +3,55 @@ import gmDrawUtils = require("gm-draw-utils");
 import meshData = require("./mesh-data");
 import domUtils = require("./dom-utils");
 
+import storage = require("./storage-utils");
+
+var shortid = require('shortid');
+
 declare var Promise;
 
 var timeout = null;
 
 export var controlPanel: domUtils.ControlPanel;
 
+class StorageItem {
+    widthX: number;
+    widthY: number;
+    
+    ground: number;
+    height: number;
+
+    scale: number = 0.01;
+    
+    rotation: number;
+    
+    position: {
+        x: number,
+        y: number
+    };
+}
+
+class StorageModel {
+    items: {[itemId: string]: {[panoId: string]: StorageItem}};
+}
+
 export class FromMapRectMesh extends gsvInjection.Mesh {
     private cubeBase = new meshData.CubeBase();
     
     widthX: number = 1;
     widthY: number = 1;
-    ground = 5;
-    height = 10;
+    ground: number = 5;
+    height: number = 10;
     
     scale: number = 0.01;
-
-    calibration: (position: {x: number, y: number, z?: number}, rotation: number) => {position: {x: number, y: number, z: number}, rotation: number};
     
-    constructor(private rectangle: gmDrawUtils.Rectangle, getHeading: () => number) {
+    calibration: (position: {x: number, y: number, z?: number}, rotation: number) => {position: {x: number, y: number, z: number}, rotation: number};
+
+    public id: string;
+    
+    constructor(private rectangle: gmDrawUtils.Rectangle, getHeading: () => number, id?: string) {
         super(getHeading);
+
+        this.id = id || shortid.generate();
         
         this.vertices = this.cubeBase.vertices;
         this.indices = this.cubeBase.indices;
@@ -32,9 +61,64 @@ export class FromMapRectMesh extends gsvInjection.Mesh {
         
         this.rectangle.displayListener = (data: {wheelEvent: any}) => {
             this.applyData(data);
-        }
+        };
         
+        rectangle.onRemove = () => {
+            this.remove();
+
+            this.touchStreetView();
+        };
+        
+        rectangle.onPanoChanged = (panoId: string) => {
+            var item = readStorageItem(this.id, panoId);
+            
+            if(!item) {
+                return;
+            }
+
+            this.applyStorageItem(item);
+
+            this.applyData({wheelEvent: null});
+        };
+
         this.applyData({wheelEvent: null});
+    }
+
+    toStorageItem(): StorageItem {
+        var result = new StorageItem();
+
+        result.widthX = this.rectangle.bounds.width;
+        result.widthY = this.rectangle.bounds.height;
+
+        result.position = {x: this.rectangle.position.x, y: this.rectangle.position.y};
+        result.rotation = this.rectangle.rotation;
+
+        result.ground = this.ground;
+
+        result.height = this.height;
+
+        result.scale = this.scale;
+
+        return result;
+    }
+
+    applyStorageItem(item: StorageItem): void {
+        this.rectangle.bounds.width = item.widthX;
+        this.rectangle.bounds.height = item.widthY;
+
+        this.rectangle.position = {x: item.position.x, y: item.position.y};
+
+        this.rectangle.rotation = item.rotation;
+
+        this.ground = item.ground;
+
+        this.height = item.height;
+
+        this.scale = item.scale;
+    }
+    
+    serialize(): any {
+
     }
     
     wheelScrolled(event) {
@@ -78,7 +162,29 @@ export class FromMapRectMesh extends gsvInjection.Mesh {
 
 var taskId = null;
 
-function touchStreetView() {
+function readStorageItem(meshId: string, panoId: string): StorageItem {
+    return null;
+}
+
+function readStorageModel(): StorageModel {
+    var result =  <StorageModel>storage.getStorageItem("rect_meshes") || new StorageModel();
+    
+    if(!result.items) {
+        result.items = {};
+    }
+    
+    return result;
+}
+
+function saveItems(items: {[itemId: string]: StorageItem}, panoId: string): void {
+    var saveKeys = Object.keys(items);
+    
+    var model = readStorageModel();
+    
+    var existingKeys = Object.keys(model.items);
+}
+
+export function touchStreetView() {
     if(taskId) {
         return;
     }

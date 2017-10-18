@@ -12,7 +12,8 @@
     "underscore": "^1.8.3",
     "gsv-injection": "*",
     "gm-draw-utils": "*",
-    "least-squares": "*"
+    "least-squares": "*",
+    "shortid": "*"
   },
   "typings": "./dist/index.d.ts",
   "repository": {
